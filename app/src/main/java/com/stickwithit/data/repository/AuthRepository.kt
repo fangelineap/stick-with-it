@@ -2,6 +2,7 @@ package com.stickwithit.data.repository
 
 import android.util.Log
 import com.stickwithit.data.model.LoginResult
+import io.github.jan.supabase.exceptions.RestException
 import com.stickwithit.data.supabase.supabase
 import io.github.jan.supabase.auth.auth
 import io.github.jan.supabase.auth.providers.builtin.Email
@@ -33,7 +34,7 @@ class AuthRepositoryImpl : AuthRepository {
                 Result.failure(Exception("Login failed"))
             }
         } catch (e: Exception) {
-            Result.failure(e)
+            Result.failure(Exception(e.toUserMessage()))
         }
     }
 
@@ -49,7 +50,7 @@ class AuthRepositoryImpl : AuthRepository {
             }
             Result.success(Unit)
         } catch (e: Exception) {
-            Result.failure(e)
+            Result.failure(Exception(e.toUserMessage()))
         }
     }
 
@@ -59,6 +60,35 @@ class AuthRepositoryImpl : AuthRepository {
             Result.success(Unit)
         } catch (e: Exception) {
             Result.failure(e)
+        }
+    }
+
+    private fun Exception.toUserMessage(): String {
+        val raw = if (this is RestException) error ?: message else message
+        return when {
+            raw == null -> "Something went wrong. Please try again."
+            raw.contains("invalid_credentials", ignoreCase = true)
+                    || raw.contains("Invalid login credentials", ignoreCase = true) ->
+                "Incorrect email or password."
+            raw.contains("email_not_confirmed", ignoreCase = true)
+                    || raw.contains("Email not confirmed", ignoreCase = true) ->
+                "Please verify your email before signing in."
+            raw.contains("user_already_exists", ignoreCase = true)
+                    || raw.contains("User already registered", ignoreCase = true) ->
+                "An account with this email already exists."
+            raw.contains("weak_password", ignoreCase = true) ->
+                "Password is too weak. Use at least 6 characters."
+            raw.contains("email_address_invalid", ignoreCase = true)
+                    || raw.contains("Unable to validate email address", ignoreCase = true) ->
+                "Please enter a valid email address."
+            raw.contains("over_email_send_rate_limit", ignoreCase = true)
+                    || raw.contains("rate limit", ignoreCase = true) ->
+                "Too many attempts. Please wait a moment and try again."
+            raw.contains("network", ignoreCase = true)
+                    || raw.contains("Unable to resolve host", ignoreCase = true)
+                    || raw.contains("timeout", ignoreCase = true) ->
+                "No internet connection. Please check your network."
+            else -> "Something went wrong. Please try again."
         }
     }
 

@@ -7,8 +7,8 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.stickwithit.data.viewModel.AuthViewModel
 import com.stickwithit.ui.screen.HomeScreen
-import com.stickwithit.ui.screen.LoginScreen
-import com.stickwithit.ui.screen.RegisterScreen
+import com.stickwithit.ui.screen.auth.LoginScreen
+import com.stickwithit.ui.screen.auth.RegisterScreen
 import com.stickwithit.ui.screen.SplashScreen
 
 @Composable
